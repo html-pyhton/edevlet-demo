@@ -2,7 +2,7 @@
   "name": "edevlet-demo",
   "version": "1.0.0",
   "private": true,
-  "description": "MeteBank e-Devlet demo",
+  "description": "MeteBank e-Devlet demo with shared JSON storage",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
