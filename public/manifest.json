@@ -1,0 +1,8 @@
+{
+  "name": "MeteBank",
+  "short_name": "MeteBank",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a3d62",
+  "theme_color": "#0a3d62"
+}
