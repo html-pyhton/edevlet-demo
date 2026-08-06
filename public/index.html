@@ -780,10 +780,11 @@ async function getSharedState(){
   return await r.json();
 }
 
-async function syncToServer(immediate=false){
+async let syncQueued=false;
+function syncToServer(immediate=false){
   clearTimeout(syncTimer);
   const send=async()=>{
-    if(syncBusy)return;
+    if(syncBusy){ syncQueued=true; return; }
     syncBusy=true;
     try{
       await fetch(SHARED_API_URL,{
@@ -791,10 +792,14 @@ async function syncToServer(immediate=false){
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(syncSnapshot())
       });
-    }catch(e){} finally{syncBusy=false;}
+    }catch(e){ console.warn("syncToServer",e); }
+    finally{
+      syncBusy=false;
+      if(syncQueued){ syncQueued=false; send(); }
+    }
   };
   if(immediate) return send();
-  syncTimer=setTimeout(send,250);
+  syncTimer=setTimeout(send,200);
 }
 
 function save(){
@@ -803,6 +808,7 @@ function save(){
 }
 
 async function syncFromServer(){
+  if(syncBusy || syncQueued) return; // yazma varken uzerine yazma
   try{
     const server=await getSharedState();
     if(!server || typeof server!=="object")return;
@@ -1505,11 +1511,35 @@ function adminHesapSil(){
   delete state.accounts[name];delete state.passwords[name];delete state.vergi[name];delete state.sgkPrim[name];delete state.plakalar[name];
   log(`ADMIN HESAP SİL | ${name}`);save();refreshAdminListe();toast("✓");
 }
-function adminBakiyeAyarla(){
-  const ad=prompt("Hesap:");if(!ad)return;
-  const name=ad.trim().toLowerCase();if(!(name in state.accounts))return toast("Yok");
-  const bal=parseFloat(prompt("Yeni bakiye:",String(state.accounts[name])));if(isNaN(bal))return toast("Geçersiz");
-  state.accounts[name]=bal;log(`ADMIN BAKİYE | ${name} | =${bal} TL`);save();refreshAdminListe();toast("✓");
+async function adminBakiyeAyarla(){
+  const ad=prompt("Hesap (ornegin metehan):");if(!ad)return;
+  const name=ad.trim().toLowerCase();
+  if(!(name in state.accounts))return toast("Hesap yok: "+name);
+  const raw=prompt("Yeni bakiye:",String(state.accounts[name]));
+  if(raw===null)return;
+  const bal=parseFloat(String(raw).replace(",","."));
+  if(isNaN(bal))return toast("Gecersiz tutar");
+  state.accounts[name]=bal;
+  log(`ADMIN BAKİYE | ${name} | =${bal} TL`);
+  localStorage.setItem("edevlet_v4",JSON.stringify(state));
+  refreshAdminListe();
+  toast("Kaydediliyor...");
+  try{
+    await syncToServer(true);
+    // dogrula
+    const server=await getSharedState();
+    if(server && server.accounts && server.accounts[name]!==bal){
+      state.accounts[name]=bal;
+      await syncToServer(true);
+    }
+    if(server && server.accounts) state.accounts=server.accounts;
+    state.accounts[name]=bal;
+    localStorage.setItem("edevlet_v4",JSON.stringify(state));
+    refreshAdminListe();
+    toast("✓ Bakiye: "+name+" = "+bal+" TL");
+  }catch(e){
+    toast("Sunucuya yazilamadi, tekrar dene");
+  }
 }
 function adminHesapYenidenAdlandir(){
   const eski=prompt("Eski ad:");if(!eski)return;
