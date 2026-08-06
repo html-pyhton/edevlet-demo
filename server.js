@@ -4,23 +4,11 @@ const path = require("path");
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
-
-// public/index.html varsa public, yoksa kök klasör
-const PUBLIC = fs.existsSync(path.join(ROOT, "public", "index.html"))
-  ? path.join(ROOT, "public")
-  : ROOT;
-
 const DATA_DIR = path.join(ROOT, "data");
 const DATA_FILE = path.join(DATA_DIR, "state.json");
 
 const DEFAULT_STATE = {
-  accounts: {
-    metehan: 1500,
-    mustafa: 750,
-    remzi: 200,
-    suna: 0,
-    ahmet: 3200
-  },
+  accounts: { metehan: 1500, mustafa: 750, remzi: 200, suna: 0, ahmet: 3200 },
   passwords: {},
   history: [],
   currentUser: null,
@@ -33,7 +21,7 @@ const DEFAULT_STATE = {
   plakalar: {},
   vezne: [],
   favorites: [],
-  duyuru: "Sistem egitim demosu olarak calisir. Resmi e-Devlet degildir.",
+  duyuru: "Sistem egitim demosu olarak calisir.",
   vergi: {},
   sgkPrim: {},
   mulkler: {},
@@ -42,9 +30,8 @@ const DEFAULT_STATE = {
 };
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
-
 if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(DEFAULT_STATE, null, 2), "utf8");
+  fs.writeFileSync(DATA_FILE, JSON.stringify(DEFAULT_STATE, null, 2));
 }
 
 function readState() {
@@ -58,59 +45,53 @@ function readState() {
 function writeState(data) {
   data.currentUser = null;
   data.isAdmin = false;
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-function sendJson(res, status, data) {
-  const body = JSON.stringify(data);
+function sendJson(res, status, obj) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     "Access-Control-Allow-Origin": "*"
   });
-  res.end(body);
+  res.end(JSON.stringify(obj));
 }
 
-function safePath(urlPath) {
+function findFile(urlPath) {
   const clean = decodeURIComponent((urlPath || "/").split("?")[0]);
-  const requested = clean === "/" ? "/index.html" : clean;
-  const file = path.normalize(path.join(PUBLIC, requested));
-  if (!file.startsWith(PUBLIC + path.sep) && file !== PUBLIC) return null;
-  return file;
+  const name = clean === "/" ? "index.html" : clean.replace(/^\//, "");
+  const candidates = [
+    path.join(ROOT, "public", name),
+    path.join(ROOT, name)
+  ];
+  for (const f of candidates) {
+    try {
+      if (fs.existsSync(f) && fs.statSync(f).isFile()) return f;
+    } catch (e) {}
+  }
+  return null;
 }
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".svg": "image/svg+xml",
-  ".ico": "image/x-icon"
+  ".css": "text/css; charset=utf-8"
 };
 
-const server = http.createServer((req, res) => {
+http.createServer((req, res) => {
   if ((req.url || "").startsWith("/api/state")) {
-    if (req.method === "GET") {
-      return sendJson(res, 200, readState());
-    }
+    if (req.method === "GET") return sendJson(res, 200, readState());
     if (req.method === "POST") {
       let body = "";
-      req.on("data", (chunk) => {
-        body += chunk;
-        if (body.length > 2000000) req.destroy();
-      });
+      req.on("data", (c) => { body += c; });
       req.on("end", () => {
         try {
-          const data = JSON.parse(body);
-          if (!data || typeof data !== "object" || Array.isArray(data)) {
-            return sendJson(res, 400, { success: false, error: "Gecersiz veri" });
-          }
-          writeState(data);
+          writeState(JSON.parse(body));
           sendJson(res, 200, { success: true });
-        } catch (e) {
-          sendJson(res, 400, { success: false, error: "JSON okunamadi" });
+        } catch {
+          sendJson(res, 400, { success: false });
         }
       });
       return;
@@ -119,27 +100,20 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  const file = safePath(req.url);
+  const file = findFile(req.url);
   if (!file) {
-    res.writeHead(403);
-    return res.end("Forbidden");
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    return res.end("Not Found: " + (req.url || "/"));
   }
 
-  fs.readFile(file, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      return res.end("Not Found");
-    }
-    const ext = path.extname(file).toLowerCase();
-    res.writeHead(200, {
-      "Content-Type": MIME[ext] || "application/octet-stream",
-      "Cache-Control": "no-store"
-    });
-    res.end(data);
+  const data = fs.readFileSync(file);
+  const ext = path.extname(file).toLowerCase();
+  res.writeHead(200, {
+    "Content-Type": MIME[ext] || "application/octet-stream",
+    "Cache-Control": "no-store"
   });
-});
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log("MeteBank calisiyor: 0.0.0.0:" + PORT);
-  console.log("PUBLIC folder:", PUBLIC);
+  res.end(data);
+}).listen(PORT, "0.0.0.0", () => {
+  console.log("MeteBank calisiyor:" + PORT);
+  console.log("public/index?", fs.existsSync(path.join(ROOT, "public", "index.html")));
 });
