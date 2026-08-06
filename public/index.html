@@ -1,1 +1,1600 @@
-test
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0a3d62"/>
+<link rel="manifest" href="manifest.json"/>
+<title>e-Devlet Kapısı</title>
+<style>
+:root{
+  --ed-blue:#0a3d62;--ed-blue2:#0d547d;--ed-blue3:#1565a0;
+  --ed-red:#c8102e;--ed-green:#2e7d32;--ed-bg:#f0f3f6;
+  --ed-card:#fff;--ed-text:#1c2330;--ed-muted:#6a7685;
+  --ed-border:#d5dde6;--ed-soft:#e8eef4;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:"Segoe UI",system-ui,Tahoma,sans-serif;background:var(--ed-bg);color:var(--ed-text);min-height:100dvh}
+.screen{display:none;min-height:100dvh;flex-direction:column}
+.screen.active{display:flex}
+.topbar{background:var(--ed-blue);color:#fff}
+.topbar-inner{max-width:760px;margin:0 auto;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+.flag{width:28px;height:20px;border-radius:2px;background:var(--ed-red);position:relative;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.flag::after{content:"";position:absolute;left:8px;top:4px;width:10px;height:10px;border:2px solid #fff;border-radius:50%;box-shadow:-3px 0 0 -1px #fff}
+.topbar h1{font-size:1.05rem;font-weight:700}
+.topbar .sub{font-size:.68rem;opacity:.88;margin-top:1px}
+.topbar-red{height:3px;background:var(--ed-red)}.warn-bar{background:#fff3cd;color:#856404;border-bottom:1px solid #ffe08a;padding:6px 12px;font-size:.72rem;text-align:center;font-weight:600}
+.userbar{background:#fff;border-bottom:1px solid var(--ed-border);padding:8px 14px;font-size:.8rem;color:var(--ed-muted);display:flex;justify-content:space-between;align-items:center;max-width:760px;margin:0 auto;width:100%;gap:8px}
+.userbar strong{color:var(--ed-blue)}
+.content{flex:1;padding:12px 14px 20px;max-width:760px;margin:0 auto;width:100%;overflow-y:auto}
+.card{background:var(--ed-card);border:1px solid var(--ed-border);border-radius:6px;padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card-title{font-size:.92rem;font-weight:700;color:var(--ed-blue);margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--ed-blue)}
+.btn{display:block;width:100%;border:none;border-radius:4px;padding:11px 14px;font-size:.9rem;font-weight:600;cursor:pointer;margin-bottom:7px;font-family:inherit}
+.btn:active{opacity:.88}
+.btn-primary{background:var(--ed-blue2);color:#fff}
+.btn-success{background:var(--ed-green);color:#fff}
+.btn-danger{background:var(--ed-red);color:#fff}
+.btn-warning{background:#e65100;color:#fff}
+.btn-dark{background:#37474f;color:#fff}
+.btn-outline{background:#fff;color:var(--ed-blue2);border:1.5px solid var(--ed-blue2)}
+.btn-sm{padding:8px 11px;font-size:.82rem}
+.row{display:flex;gap:8px}.row .btn{flex:1;margin-bottom:0}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #c5cdd6;border-radius:4px;font-size:.9rem;margin-bottom:9px;font-family:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ed-blue2);box-shadow:0 0 0 2px rgba(13,84,125,.14)}
+label{display:block;font-size:.75rem;color:var(--ed-muted);margin-bottom:3px;font-weight:600}
+.muted{color:var(--ed-muted);font-size:.78rem}.center{text-align:center}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.svc{background:#fff;border:1px solid var(--ed-border);border-radius:6px;padding:12px 5px 10px;text-align:center;cursor:pointer;position:relative}
+.svc:active{border-color:var(--ed-blue2);box-shadow:0 0 0 2px rgba(13,84,125,.12)}
+.svc .ic{width:38px;height:38px;margin:0 auto 5px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;background:var(--ed-soft);color:var(--ed-blue)}
+.svc .t{font-size:.7rem;font-weight:600;color:var(--ed-blue);line-height:1.25}
+.svc .fav{position:absolute;top:4px;right:6px;font-size:.7rem;opacity:.5}
+.svc.fav-on .fav{opacity:1}
+.list-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee;gap:8px}
+.list-item:last-child{border-bottom:none}
+.name{font-weight:600;font-size:.88rem}
+.amt{font-weight:700;color:var(--ed-blue);white-space:nowrap;font-size:.88rem}
+.tx{padding:8px 0;border-bottom:1px solid #eee;font-size:.82rem;line-height:1.35}
+.tx .time{color:var(--ed-muted);font-size:.7rem}
+.status-ok{color:var(--ed-green);font-weight:600;font-size:.78rem}
+.status-wait{color:#e65100;font-weight:600;font-size:.78rem}
+.status-no{color:var(--ed-red);font-weight:600;font-size:.78rem}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 16px;border-radius:4px;font-size:.84rem;z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90%;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.toast.show{opacity:1}
+.login-box{max-width:400px;margin:20px auto 0}
+.big-flag{width:48px;height:32px;background:var(--ed-red);border-radius:3px;position:relative;margin:0 auto 14px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.big-flag::after{content:"";position:absolute;left:14px;top:7px;width:16px;height:16px;border:2.5px solid #fff;border-radius:50%;box-shadow:-5px 0 0 -1.5px #fff}
+footer.ed-foot{background:var(--ed-blue);color:rgba(255,255,255,.75);text-align:center;padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));font-size:.7rem;margin-top:auto}
+.checkrow{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:.86rem}
+.checkrow input{width:auto;margin:0}
+.search-box{display:flex;gap:6px;margin-bottom:10px}
+.search-box input{margin:0;flex:1}
+.cat{margin-bottom:12px}.cat-h{font-size:.7rem;font-weight:700;color:var(--ed-blue);text-transform:uppercase;letter-spacing:.4px;margin:8px 0 6px}.section-label{font-size:.72rem;font-weight:700;color:var(--ed-muted);text-transform:uppercase;letter-spacing:.4px;margin:6px 0 8px}
+.banner{background:linear-gradient(90deg,#0d547d,#1565a0);color:#fff;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:.8rem;line-height:1.35}
+.banner strong{display:block;margin-bottom:2px}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.stat{background:var(--ed-soft);border-radius:6px;padding:8px 6px;text-align:center}
+.stat .n{font-size:1.1rem;font-weight:700;color:var(--ed-blue)}
+.stat .l{font-size:.65rem;color:var(--ed-muted)}
+.pill{display:inline-block;background:var(--ed-soft);color:var(--ed-blue);font-size:.68rem;padding:2px 7px;border-radius:10px;font-weight:600}
+.hidden{display:none!important}
+.dekont-box{font-family:ui-monospace,Consolas,monospace;font-size:.75rem;background:#f8fafc;border:1px dashed #cbd5e1;padding:10px;border-radius:4px;white-space:pre-wrap;line-height:1.4}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 id="txt-site-title" data-text="siteTitle">e-Devlet Kapısı</h1><div class="sub" id="txt-site-sub" data-text="siteSub">www.turkiye.gov.tr · Demo</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="login-box">
+      <div class="big-flag"></div>
+      <div class="card">
+        <div class="card-title">e-Devlet Şifresi ile Giriş (Demo)</div>
+        <label id="txt-login-user-label">T.C. Kimlik No / Kullanıcı Adı</label>
+        <input id="login-user" placeholder="Kullanıcı adınız" autocomplete="username"/>
+        <label id="txt-login-pass-label">e-Devlet Şifresi</label>
+        <input id="login-pass" type="password" placeholder="Şifreniz (yoksa boş)"/>
+        <button class="btn btn-success" onclick="doLogin()" id="txt-login-btn">Giriş Yap</button>
+        <button class="btn btn-outline btn-sm" onclick="showScreen('admin-login')" id="txt-login-admin-btn">Kurumsal / Admin Giriş</button>
+      </div>
+      <p class="muted center">Demo: metehan, mustafa, remzi, suna, ahmet<br><strong>Resmi e-Devlet değildir.</strong></p>
+    </div>
+  </div>
+  <footer class="ed-foot"><span id="txt-footer-login" data-text="footerLogin">T.C. Cumhurbaşkanlığı Dijital Dönüşüm Ofisi · Eğitim Demosu</span></footer>
+</div>
+
+<div id="screen-admin-login" class="screen">
+  <div class="topbar" style="background:#5c0a0a"><div class="topbar-inner"><div class="flag"></div><div><h1>Yönetici Girişi</h1><div class="sub">Yetkili erişim</div></div></div></div>
+  <div class="topbar-red" style="background:#ff5252"></div>
+  <div class="warn-bar"><span data-text="warnAdmin">⚠ DEMO YÖNETİM PANELİ — Resmi sistem değildir.</span></div>
+  <div class="content">
+    <div class="card" style="margin-top:18px">
+      <div class="card-title" id="txt-admin-login-title">Admin Doğrulama</div>
+      <label>Yönetici şifresi</label>
+      <input id="admin-pass" type="password" placeholder="admin123"/>
+      <button class="btn btn-danger" onclick="doAdminLogin()" id="txt-admin-login-btn">Panele Gir</button>
+      <button class="btn btn-outline" onclick="showScreen('login')">← Geri</button>
+    </div>
+  </div>
+  <footer class="ed-foot">Yalnızca yetkili personel</footer>
+</div>
+
+<!-- MENU -->
+<div id="screen-menu" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="siteTitle">e-Devlet Kapısı</h1><div class="sub" id="txt-menu-sub" data-text="menuSub">Hizmetler</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="userbar">
+    <span>Vatandaş: <strong id="menu-welcome">—</strong></span>
+    <span id="menu-balance" style="font-weight:700;color:var(--ed-blue)">0 TL</span>
+  </div>
+  <div class="content">
+    <div class="banner" id="duyuru-banner"><strong id="txt-duyuru-baslik">Duyuru</strong><span id="duyuru-text">Sistem demo modunda çalışmaktadır.</span></div>
+    <div class="stat-row" id="menu-stats"></div>
+    <div class="search-box">
+      <input id="svc-search" placeholder="Hizmet ara (nüfus, vergi, sgk, tapu...)" data-placeholder="searchPlaceholder" oninput="filterServices()"/>
+    </div>
+    <div class="section-label"><span id="txt-svc-section">e-Hizmet grupları (demo)</span></div>
+    <div class="svc-grid" id="svc-grid"></div>
+    <button class="btn btn-outline btn-sm" onclick="showScreen('profil')" id="txt-profil-btn">Profilim</button>
+    <button class="btn btn-outline btn-sm" onclick="doLogout()" id="txt-logout-btn">Güvenli Çıkış</button>
+  </div>
+  <footer class="ed-foot"><span data-text="footer">EĞİTİM DEMOSU — turkiye.gov.tr değildir · Gerçek işlem yapılmaz</span></footer>
+</div>
+
+<!-- Dynamic service screens container pattern: individual screens below -->
+
+<div id="screen-para" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="bankaH1">Banka İşlemleri</h1><div class="sub">Yatırma · Çekme</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Para Yatırma / Çekme</div>
+      <label>Hesap adı</label><input id="para-ad"/>
+      <label>Tutar (TL)</label><input id="para-miktar" type="number" min="1"/>
+      <div class="row"><button class="btn btn-success" onclick="doYatir()" data-text="bankaYatir">Yatır</button><button class="btn btn-danger" onclick="doCek()" data-text="bankaCek">Çek</button></div>
+      <button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="doBakiye()" data-text="bankaBakiye">Bakiye Sorgula</button>
+      <p class="muted" style="margin-top:8px;text-align:left"><span id="txt-cekme-notu">Nakit çekimler vezne onayına düşer. Yetkili onaylayınca fiş oluşur; para o zaman hesaptan düşülür.</span></p>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-havale" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="havaleH1">Havale / EFT</h1><div class="sub">Transfer</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Transfer Bilgileri</div>
+      <label>Gönderen</label><input id="havale-from"/>
+      <label>Alıcı</label><input id="havale-to"/>
+      <label>Tutar (TL)</label><input id="havale-miktar" type="number" min="1"/>
+      <label>Açıklama</label><input id="havale-aciklama" placeholder="Kira, harçlık..."/>
+      <button class="btn btn-success" onclick="doHavale()" data-text="havaleBtn">Havale Yap</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-nufus" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="nufusH1">Nüfus ve Vatandaşlık</h1><div class="sub">Kimlik Kartı</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Kimlik Kartı Başvurusu</div>
+      <label>Ad Soyad</label><input id="kimlik-ad"/>
+      <label>Doğum tarihi</label><input id="kimlik-dogum" type="date"/>
+      <label>İl / İlçe</label><input id="kimlik-il" placeholder="İstanbul / Kadıköy"/>
+      <label>Başvuru nedeni</label>
+      <select id="kimlik-tip"><option value="yeni">Yeni kimlik</option><option value="kayip">Kayıp / çalıntı</option><option value="degisim">Bilgi değişikliği</option></select>
+      <button class="btn btn-primary" onclick="basvuruKimlik()" data-text="nufusBtn">Başvuruyu Gönder</button>
+    </div>
+    <div class="card"><div class="card-title">Durumum</div><div id="kimlik-durum"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-arac" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="aracH1">Araç İşlemleri</h1><div class="sub">Plaka · Tescil</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Plaka Başvurusu</div>
+      <label>Mevcut plaka</label><input id="plaka-eski" style="text-transform:uppercase" placeholder="34 ABC 123"/>
+      <label>Yeni plaka</label><input id="plaka-yeni" style="text-transform:uppercase" placeholder="06 XYZ 456"/>
+      <label>Ruhsat no</label><input id="plaka-ruhsat"/>
+      <label>İşlem</label>
+      <select id="plaka-tip"><option value="degisim">Plaka değişikliği</option><option value="ilkyazim">İlk tescil</option><option value="devri">Devri sonrası</option></select>
+      <button class="btn btn-primary" onclick="basvuruPlaka()" data-text="aracBtn">Başvuruyu Gönder</button>
+    </div>
+    <div class="card"><div class="card-title">Plakalarım</div><div id="plaka-listesi"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-emlak" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="emlakH1">Emlak</h1><div class="sub">Kiralık · Satılık</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">İlan Ver</div>
+      <label>Tip</label><select id="emlak-tip"><option value="kiralik">Kiralık</option><option value="satilik">Satılık</option></select>
+      <label>Konum</label><input id="emlak-konum" placeholder="Ankara / Çankaya"/>
+      <label>Açıklama</label><textarea id="emlak-aciklama" rows="2"></textarea>
+      <label>Fiyat (TL)</label><input id="emlak-fiyat" type="number" min="1"/>
+      <label>m²</label><input id="emlak-m2" type="number" min="1"/>
+      <button class="btn btn-success" onclick="ilanEkle()" data-text="emlakBtn">Yayınla</button>
+    </div>
+    <div class="card"><div class="card-title">İlanlar</div><div id="emlak-listesi"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-sgk" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="sgkH1">SGK Hizmetleri</h1><div class="sub">Hizmet dökümü · Prim</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Hizmet Dökümü (Demo)</div>
+      <p class="muted" style="margin-bottom:8px">Son 12 ay prim özeti simülasyonu</p>
+      <div id="sgk-ozet"></div>
+      <button class="btn btn-primary btn-sm" onclick="sgkSorgula()" data-text="sgkSorgula">Sorgula / Yenile</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Prim Borcu Ödeme (Demo)</div>
+      <label>Tutar</label><input id="sgk-tutar" type="number" min="1" placeholder="0"/>
+      <button class="btn btn-success" onclick="sgkOde()" data-text="sgkOde">Bankadan Öde</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-vergi" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="vergiH1">Vergi İşlemleri</h1><div class="sub">Borç sorgula · Öde</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Vergi Borcu (Demo)</div>
+      <div id="vergi-liste"></div>
+      <button class="btn btn-primary btn-sm" onclick="vergiYenile()" data-text="vergiGetir">Borçları Getir</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Ödeme</div>
+      <label>Borç kalemi</label>
+      <select id="vergi-sec"></select>
+      <button class="btn btn-success" onclick="vergiOde()" data-text="vergiOde">Seçileni Öde</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-adli" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="adliH1">Adli Sicil</h1><div class="sub">Belge talebi (demo)</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Adli Sicil Kaydı Başvurusu</div>
+      <label>Belge amacı</label>
+      <select id="adli-amac"><option>İş başvurusu</option><option>Vize</option><option>İhale</option><option>Diğer</option></select>
+      <button class="btn btn-primary" onclick="basvuruAdli()" data-text="adliBtn">Belge Talep Et</button>
+    </div>
+    <div class="card"><div class="card-title">Taleplerim</div><div id="adli-liste"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-egitim" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="egitimH1">Eğitim</h1><div class="sub">Öğrenci belgesi (demo)</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Öğrenci Belgesi</div>
+      <label>Okul / Üniversite</label><input id="egitim-okul" placeholder="Örn: Ankara Üniversitesi"/>
+      <label>Bölüm</label><input id="egitim-bolum" placeholder="Bilgisayar Mühendisliği"/>
+      <label>Sınıf</label><select id="egitim-sinif"><option>1</option><option>2</option><option>3</option><option>4</option><option>Hazırlık</option></select>
+      <button class="btn btn-primary" onclick="basvuruEgitim()" data-text="egitimBtn">Belge Talep Et</button>
+    </div>
+    <div class="card"><div class="card-title">Taleplerim</div><div id="egitim-liste"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-basvuru" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="basvuruH1">Başvurularım</h1><div class="sub">Tüm talepler</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card"><div id="basvuru-listesi"></div></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-liste" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="listeH1">Hesaplarım</h1><div class="sub">Banka</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card" id="liste-container"></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-gecmis" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="gecmisH1">İşlem Geçmişi</h1><div class="sub" id="gecmis-alt">Dekont</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card" id="gecmis-container"></div>
+    <button class="btn btn-primary btn-sm" onclick="dekontIndir()" data-text="gecmisKopyala">Son işlemi dekont olarak kopyala</button>
+    <button class="btn btn-danger btn-sm" onclick="clearGecmis()" data-text="gecmisTemizle">Geçmişi Temizle</button>
+    <button class="btn btn-outline" onclick="goBackFromGecmis()">← Geri</button>
+  </div>
+</div>
+
+<div id="screen-sifre" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="sifreH1">Şifre İşlemleri</h1><div class="sub">Güvenlik</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Şifre Değiştir</div>
+      <label>Mevcut</label><input id="sifre-eski" type="password"/>
+      <label>Yeni</label><input id="sifre-yeni" type="password"/>
+      <label>Yeni (tekrar)</label><input id="sifre-yeni2" type="password"/>
+      <button class="btn btn-success" onclick="doSifreDegistir()" data-text="sifreKaydet">Kaydet</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-profil" class="screen">
+  <div class="topbar"><div class="topbar-inner"><div class="flag"></div><div><h1 data-text="profilH1">Profilim</h1><div class="sub">Özet bilgiler</div></div></div></div>
+  <div class="topbar-red"></div>
+  <div class="warn-bar"><span class="txt-warn-shared" data-text="warnBar">⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.</span></div>
+  <div class="content">
+    <div class="card" id="profil-box"></div>
+    <button class="btn btn-outline" onclick="showScreen('menu')"> data-text="geriAna">← Ana Sayfa</button>
+  </div>
+</div>
+
+<div id="screen-admin" class="screen">
+  <div class="topbar" style="background:#5c0a0a"><div class="topbar-inner"><div class="flag"></div><div><h1 id="txt-admin-panel-title" data-text="adminPanelTitle">Yönetim Paneli</h1><div class="sub" id="txt-admin-panel-sub" data-text="adminPanelSub">Tam yetki</div></div></div></div>
+  <div class="topbar-red" style="background:#ff5252"></div>
+  <div class="warn-bar"><span data-text="warnAdmin">⚠ DEMO YÖNETİM PANELİ — Resmi sistem değildir.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Hesap</div>
+      <button class="btn btn-success btn-sm" onclick="adminYeniHesap()" data-text="adminYeniHesap">+ Yeni Hesap</button>
+      <button class="btn btn-danger btn-sm" onclick="adminHesapSil()" data-text="adminHesapSil">Hesap Sil</button>
+      <button class="btn btn-warning btn-sm" onclick="adminBakiyeAyarla()" data-text="adminBakiye">Bakiye Ayarla</button>
+      <button class="btn btn-primary btn-sm" onclick="adminHesapYenidenAdlandir()" data-text="adminIsim">Hesap Adı Değiştir</button>
+      <button class="btn btn-primary btn-sm" onclick="adminKullaniciSifre()" data-text="adminSifre">Kullanıcı Şifresi</button>
+      <button class="btn btn-dark btn-sm" onclick="adminSifreGoster()" data-text="adminSifreGoster">Şifreleri Göster/Gizle</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Başvuru & İlan & Duyuru</div>
+      <button class="btn btn-primary btn-sm" onclick="adminBasvuruOnay()" data-text="adminBasvuruOnay">Başvuru Onay/Red</button>
+      <button class="btn btn-warning btn-sm" onclick="adminIlanSil()" data-text="adminIlanSil">İlan Sil</button>
+      <button class="btn btn-primary btn-sm" onclick="adminDuyuru()" data-text="adminDuyuru">Duyuru Metni Değiştir</button>
+      <button class="btn btn-success btn-sm" onclick="showScreen('vezne')">Vezne / Nakit Onay</button>
+      <button class="btn btn-dark btn-sm" onclick="openGecmis(true)">Tüm Geçmiş</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Sistem</div>
+      <button class="btn btn-warning btn-sm" onclick="adminAdminSifreDegistir()" data-text="adminAdminSifre">Admin Şifresi</button>
+      <button class="btn btn-danger btn-sm" onclick="showScreen('sifirla')">Sistemi Sıfırla</button>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">Çıkış</button>
+    </div>
+    <div class="card"><div class="card-title">Hesaplar</div><div id="admin-liste"></div></div>
+  </div>
+</div>
+
+
+<div id="screen-vezne" class="screen">
+  <div class="topbar" style="background:#5c0a0a"><div class="topbar-inner"><div class="flag"></div><div><h1 id="txt-vezne-title" data-text="vezneTitle">Vezne / Nakit Onay</h1><div class="sub" id="txt-vezne-sub" data-text="vezneSub">Noterlik tarzı onay + fiş</div></div></div></div>
+  <div class="topbar-red" style="background:#ff5252"></div>
+  <div class="warn-bar"><span id="txt-warn-vezne" data-text="warnVezne">⚠ DEMO VEZNE — Onayladığınız işlem için fiş metni oluşur; kağıda yazıp verebilirsiniz.</span></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Bekleyen nakit talepleri</div>
+      <div id="vezne-liste"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Son fiş (kağıda yazılacak)</div>
+      <div class="dekont-box" id="vezne-fis">Henüz fiş yok</div>
+      <button class="btn btn-primary btn-sm" onclick="fisKopyala()" data-text="vezneKopyala">Fişi panoya kopyala</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('admin')">← Yönetim</button>
+  </div>
+</div>
+
+
+<div id="screen-metinler" class="screen">
+  <div class="topbar" style="background:#5c0a0a"><div class="topbar-inner"><div class="flag"></div><div><h1>Yazılar / Metinler</h1><div class="sub">Site metinlerini düzenle</div></div></div></div>
+  <div class="topbar-red" style="background:#ff5252"></div>
+  <div class="warn-bar">Admin: buradaki metinler tüm cihazlara ortak kaydedilir.</div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Düzenlenebilir metinler</div>
+      <div id="metin-form"></div>
+      <button class="btn btn-success" onclick="kaydetMetinler()">Kaydet</button>
+      <button class="btn btn-warning btn-sm" onclick="sifirlaMetinler()">Varsayılana Dön</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('admin')">← Yönetim</button>
+  </div>
+</div>
+
+<div id="screen-sifirla" class="screen">
+  <div class="topbar" style="background:#5c0a0a"><div class="topbar-inner"><div class="flag"></div><div><h1>Sistemi Sıfırla</h1><div class="sub">Seçerek</div></div></div></div>
+  <div class="topbar-red" style="background:#ff5252"></div>
+  <div class="warn-bar"><span data-text="warnAdmin">⚠ DEMO YÖNETİM PANELİ — Resmi sistem değildir.</span></div>
+  <div class="content">
+    <div class="card">
+      <label class="checkrow"><input type="checkbox" id="rst-hesaplar" checked/> Hesaplar</label>
+      <label class="checkrow"><input type="checkbox" id="rst-sifreler" checked/> Şifreler</label>
+      <label class="checkrow"><input type="checkbox" id="rst-gecmis" checked/> Geçmiş</label>
+      <label class="checkrow"><input type="checkbox" id="rst-sayac"/> Sayaç</label>
+      <label class="checkrow"><input type="checkbox" id="rst-adminpass"/> Admin şifresi</label>
+      <label class="checkrow"><input type="checkbox" id="rst-basvuru"/> Başvurular</label>
+      <label class="checkrow"><input type="checkbox" id="rst-ilan"/> İlanlar</label>
+      <label class="checkrow"><input type="checkbox" id="rst-plaka"/> Plakalar</label>
+      <label class="checkrow"><input type="checkbox" id="rst-vergi"/> Vergi borçları</label>
+      <label class="checkrow"><input type="checkbox" id="rst-mulk"/> Mülk kayıtları</label>
+      <label class="checkrow"><input type="checkbox" id="rst-vezne"/> Vezne talepleri</label>
+      <button class="btn btn-danger" onclick="doAdminSifirla()">Sıfırla</button>
+    </div>
+    <button class="btn btn-outline" onclick="showScreen('admin')">← Geri</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const DEFAULT_ACCOUNTS={metehan:1500,mustafa:750,remzi:200,suna:0,ahmet:3200};
+const DEFAULT_ADMIN_PASS="admin123";
+
+const DEFAULT_TEXTS = {
+  siteTitle: "e-Devlet Kapısı",
+  siteSub: "www.turkiye.gov.tr · Demo",
+  warnBar: "⚠ EĞİTİM DEMOSU — Resmi e-Devlet (turkiye.gov.tr) değildir. Gerçek kimlik/para işlemi yapılmaz.",
+  warnAdmin: "⚠ DEMO YÖNETİM PANELİ — Resmi sistem değildir.",
+  warnVezne: "⚠ DEMO VEZNE — Onayladığınız işlem için fiş metni oluşur; kağıda yazıp verebilirsiniz.",
+  footer: "EĞİTİM DEMOSU — turkiye.gov.tr değildir · Gerçek işlem yapılmaz",
+  footerLogin: "T.C. Cumhurbaşkanlığı Dijital Dönüşüm Ofisi · Eğitim Demosu",
+  footerAdmin: "Yalnızca yetkili personel",
+  loginTitle: "e-Devlet Şifresi ile Giriş (Demo)",
+  loginUserLabel: "T.C. Kimlik No / Kullanıcı Adı",
+  loginPassLabel: "e-Devlet Şifresi",
+  loginBtn: "Giriş Yap",
+  loginAdminBtn: "Kurumsal / Admin Giriş",
+  loginHint: "Demo: metehan, mustafa, remzi, suna, ahmet — Resmi e-Devlet değildir.",
+  adminLoginH1: "Yönetici Girişi",
+  adminLoginSub: "Yetkili erişim",
+  adminLoginTitle: "Admin Doğrulama",
+  adminLoginPassLabel: "Yönetici şifresi",
+  adminLoginBtn: "Panele Gir",
+  adminLoginBack: "← Geri",
+  menuSub: "Hizmetler",
+  vatandasLabel: "Vatandaş:",
+  duyuruBaslik: "Duyuru",
+  svcSection: "e-Hizmet grupları (demo)",
+  searchPlaceholder: "Hizmet ara (nüfus, vergi, sgk, tapu...)",
+  profilBtn: "Profilim",
+  logoutBtn: "Güvenli Çıkış",
+  // Banka
+  bankaH1: "Banka İşlemleri",
+  bankaSub: "Yatırma · Çekme",
+  bankaCard: "Para Yatırma / Çekme",
+  bankaHesap: "Hesap adı",
+  bankaTutar: "Tutar (TL)",
+  bankaYatir: "Yatır",
+  bankaCek: "Çek",
+  bankaBakiye: "Bakiye Sorgula",
+  cekmeNotu: "Nakit çekimler vezne onayına düşer. Yetkili onaylayınca fiş oluşur; para o zaman hesaptan düşülür.",
+  // Havale
+  havaleH1: "Havale / EFT",
+  havaleSub: "Transfer",
+  havaleCard: "Transfer Bilgileri",
+  havaleFrom: "Gönderen",
+  havaleTo: "Alıcı",
+  havaleTutar: "Tutar (TL)",
+  havaleAcik: "Açıklama",
+  havaleBtn: "Havale Yap",
+  // Kimlik
+  nufusH1: "Nüfus ve Vatandaşlık",
+  nufusSub: "Kimlik Kartı",
+  nufusCard: "Kimlik Kartı Başvurusu",
+  nufusAd: "Ad Soyad",
+  nufusDogum: "Doğum tarihi",
+  nufusIl: "İl / İlçe",
+  nufusNeden: "Başvuru nedeni",
+  nufusBtn: "Başvuruyu Gönder",
+  nufusDurum: "Durumum",
+  // Araç
+  aracH1: "Araç İşlemleri",
+  aracSub: "Plaka · Tescil",
+  aracCard: "Plaka Başvurusu",
+  aracEski: "Mevcut plaka",
+  aracYeni: "Yeni plaka",
+  aracRuhsat: "Ruhsat no",
+  aracIslem: "İşlem",
+  aracBtn: "Başvuruyu Gönder",
+  aracListe: "Plakalarım",
+  // Emlak
+  emlakH1: "Emlak",
+  emlakSub: "Kiralık · Satılık",
+  emlakCard: "İlan Ver",
+  emlakTip: "Tip",
+  emlakKonum: "Konum",
+  emlakAcik: "Açıklama",
+  emlakFiyat: "Fiyat (TL)",
+  emlakM2: "m²",
+  emlakBtn: "Yayınla",
+  emlakListe: "İlanlar",
+  emlakKirala: "Kirala",
+  emlakSatinAl: "Satın Al",
+  emlakKaldir: "İlanı Kaldır",
+  // SGK
+  sgkH1: "SGK Hizmetleri",
+  sgkSub: "Hizmet dökümü · Prim",
+  sgkCard: "Hizmet Dökümü (Demo)",
+  sgkOzet: "Son 12 ay prim özeti simülasyonu",
+  sgkSorgula: "Sorgula / Yenile",
+  sgkOdemeCard: "Prim Borcu Ödeme (Demo)",
+  sgkTutar: "Tutar",
+  sgkOde: "Bankadan Öde",
+  // Vergi
+  vergiH1: "Vergi İşlemleri",
+  vergiSub: "Borç sorgula · Öde",
+  vergiCard: "Vergi Borcu (Demo)",
+  vergiGetir: "Borçları Getir",
+  vergiOdemeCard: "Ödeme",
+  vergiKalem: "Borç kalemi",
+  vergiOde: "Seçileni Öde",
+  // Adli
+  adliH1: "Adli Sicil",
+  adliSub: "Belge talebi (demo)",
+  adliCard: "Adli Sicil Kaydı Başvurusu",
+  adliAmac: "Belge amacı",
+  adliBtn: "Belge Talep Et",
+  adliListe: "Taleplerim",
+  // Eğitim
+  egitimH1: "Eğitim",
+  egitimSub: "Öğrenci belgesi (demo)",
+  egitimCard: "Öğrenci Belgesi",
+  egitimOkul: "Okul / Üniversite",
+  egitimBolum: "Bölüm",
+  egitimSinif: "Sınıf",
+  egitimBtn: "Belge Talep Et",
+  egitimListe: "Taleplerim",
+  // Diğer sayfalar
+  basvuruH1: "Başvurularım",
+  basvuruSub: "Tüm talepler",
+  listeH1: "Hesaplarım",
+  listeSub: "Banka",
+  gecmisH1: "İşlem Geçmişi",
+  gecmisSub: "Dekont",
+  gecmisKopyala: "Son işlemi dekont olarak kopyala",
+  gecmisTemizle: "Geçmişi Temizle",
+  sifreH1: "Şifre İşlemleri",
+  sifreSub: "Güvenlik",
+  sifreCard: "Şifre Değiştir",
+  sifreEski: "Mevcut",
+  sifreYeni: "Yeni",
+  sifreYeni2: "Yeni (tekrar)",
+  sifreKaydet: "Kaydet",
+  profilH1: "Profilim",
+  profilSub: "Özet bilgiler",
+  // Admin
+  adminPanelTitle: "Yönetim Paneli",
+  adminPanelSub: "Tam yetki",
+  adminHesap: "Hesap",
+  adminBasvuru: "Başvuru & İlan & Duyuru",
+  adminSistem: "Sistem",
+  adminHesaplar: "Hesaplar",
+  adminYeniHesap: "+ Yeni Hesap",
+  adminHesapSil: "Hesap Sil",
+  adminBakiye: "Bakiye Ayarla",
+  adminIsim: "Hesap Adı Değiştir",
+  adminSifre: "Kullanıcı Şifresi",
+  adminSifreGoster: "Şifreleri Göster/Gizle",
+  adminBasvuruOnay: "Başvuru Onay/Red",
+  adminIlanSil: "İlan Sil",
+  adminDuyuru: "Duyuru Metni Değiştir",
+  adminYazilar: "Yazılar / Metinler (hepsi)",
+  adminVezne: "Vezne / Nakit Onay",
+  adminGecmis: "Tüm Geçmiş",
+  adminAdminSifre: "Admin Şifresi",
+  adminSifirla: "Sistemi Sıfırla",
+  adminCikis: "Çıkış",
+  // Vezne
+  vezneTitle: "Vezne / Nakit Onay",
+  vezneSub: "Noterlik tarzı onay + fiş",
+  vezneBekleyen: "Bekleyen nakit talepleri",
+  vezneSonFis: "Son fiş (kağıda yazılacak)",
+  vezneFisYok: "Henüz fiş yok",
+  vezneKopyala: "Fişi panoya kopyala",
+  vezneOnay: "Onayla + Fiş",
+  vezneRed: "Reddet",
+  fisBaslik: "e-Devlet Demo · VEZNE FİŞİ",
+  fisAlt: "Bu fiş eğitim demosudur. Kağıda yazıp vatandaşa verilebilir.",
+  // Genel
+  geriAna: "← Ana Sayfa",
+  geri: "← Geri",
+  geriYonetim: "← Yönetim",
+  // Hizmet adları (menü)
+  svc_para: "Banka İşlemleri",
+  svc_havale: "Havale / EFT",
+  svc_nufus: "Kimlik Kartı",
+  svc_arac: "Araç / Plaka",
+  svc_emlak: "Kira / Satılık",
+  svc_sgk: "SGK",
+  svc_vergi: "Vergi",
+  svc_adli: "Adli Sicil",
+  svc_egitim: "Eğitim",
+  svc_basvuru: "Başvurularım",
+  svc_liste: "Hesaplarım",
+  svc_gecmis: "İşlem Geçmişi",
+  svc_sifre: "Şifre",
+  svc_profil: "Profilim",
+  // Kategori başlıkları
+  cat_nufus: "Nüfus ve Vatandaşlık",
+  cat_adalet: "Adalet",
+  cat_egitim: "Eğitim",
+  cat_sgk: "Sosyal Güvenlik",
+  cat_vergi: "Gelir ve Vergi",
+  cat_ulastirma: "Ulaştırma",
+  cat_emlak: "Tapu ve Emlak",
+  cat_banka: "Bankacılık (Demo)",
+  cat_islem: "İşlemlerim",
+  cat_hesap: "Hesabım"
+};
+
+const SERVICES=[
+  // Nüfus & Vatandaşlık
+  {id:"nufus",icon:"🪪",title:"Kimlik Kartı",keys:"kimlik nüfus vatandaşlık tc",cat:"Nüfus ve Vatandaşlık"},
+  {id:"adli",icon:"⚖️",title:"Adli Sicil Kaydı",keys:"adli sicil belge sabıka adalet",cat:"Adalet"},
+  // Eğitim
+  {id:"egitim",icon:"🎓",title:"Öğrenci Belgesi",keys:"eğitim öğrenci okul belge mezuniyet",cat:"Eğitim"},
+  // Sağlık / SGK
+  {id:"sgk",icon:"🏥",title:"SGK Hizmet Dökümü",keys:"sgk prim hizmet döküm sağlık",cat:"Sosyal Güvenlik"},
+  // Vergi
+  {id:"vergi",icon:"🧾",title:"Vergi Borcu Sorgulama",keys:"vergi borç mtv gelir maliye",cat:"Gelir ve Vergi"},
+  // Ulaşım
+  {id:"arac",icon:"🚗",title:"Araç Plaka / Tescil",keys:"araç plaka tescil ruhsat ulaştırma",cat:"Ulaştırma"},
+  // Tapu / Emlak (demo)
+  {id:"emlak",icon:"🏠",title:"Tapu / Emlak İlan",keys:"emlak kira satılık ilan tapu",cat:"Tapu ve Emlak"},
+  // Bankacılık demo (not real e-devlet but kept for app)
+  {id:"para",icon:"💰",title:"Banka İşlemleri",keys:"banka para yatır çek bakiye",cat:"Bankacılık (Demo)"},
+  {id:"havale",icon:"💸",title:"Havale / EFT",keys:"havale eft transfer",cat:"Bankacılık (Demo)"},
+  {id:"liste",icon:"👥",title:"Hesaplarım",keys:"hesap liste bakiye",cat:"Bankacılık (Demo)",fn:"openListe"},
+  // Genel
+  {id:"basvuru",icon:"📋",title:"Başvurularım",keys:"başvuru takip durum",cat:"İşlemlerim"},
+  {id:"gecmis",icon:"📜",title:"İşlem Geçmişi",keys:"geçmiş dekont işlem",cat:"İşlemlerim",fn:"openGecmis"},
+  {id:"sifre",icon:"🔑",title:"Şifre İşlemleri",keys:"şifre güvenlik",cat:"Hesabım"},
+  {id:"profil",icon:"👤",title:"Profil Bilgilerim",keys:"profil özet kimlik",cat:"Hesabım"}
+];
+
+let state={
+  accounts:{},passwords:{},history:[],
+  currentUser:null,isAdmin:false,counter:0,
+  adminPass:DEFAULT_ADMIN_PASS,showPasswords:false,
+  basvurular:[],ilanlar:[],plakalar:{},vezne:[],
+  favorites:[],duyuru:"Sistem eğitim demosu olarak çalışır. Resmi e-Devlet değildir.",
+  texts:{},
+  vergi:{}, // user -> [{id,ad,tutar}]
+  sgkPrim:{} // user -> debt number
+};
+
+async function load(){
+  let localLoaded=false;
+  try{
+    const raw=localStorage.getItem("edevlet_v4");
+    if(raw){ Object.assign(state,JSON.parse(raw)); localLoaded=true; }
+    else{
+      const old=localStorage.getItem("edevlet_v3")||localStorage.getItem("metebank_v2");
+      if(old){Object.assign(state,JSON.parse(old)); localLoaded=true;}
+      else state.accounts={...DEFAULT_ACCOUNTS};
+    }
+  }catch(e){state.accounts={...DEFAULT_ACCOUNTS};}
+
+  state.accounts=state.accounts||{...DEFAULT_ACCOUNTS};
+  state.passwords=state.passwords||{};
+  state.basvurular=state.basvurular||[];
+  state.ilanlar=state.ilanlar||[];
+  state.plakalar=state.plakalar||{};
+  state.favorites=state.favorites||[];
+  state.vergi=state.vergi||{};
+  state.sgkPrim=state.sgkPrim||{};
+  state.adminPass=state.adminPass||DEFAULT_ADMIN_PASS;
+  state.mulkler=state.mulkler||{};
+  state.vezne=state.vezne||[];
+  state.texts=Object.assign({}, DEFAULT_TEXTS, state.texts||{});
+  state.duyuru=state.duyuru||"Sistem eğitim demosu olarak çalışır.";
+
+  // Google Apps Script üzerinden ortak veriyi almaya çalış.
+  try{
+    const server=await getSharedState();
+    if(server && typeof server==="object" && Object.keys(server).length){
+      const sessionUser=state.currentUser;
+      const sessionAdmin=state.isAdmin;
+      Object.assign(state,server);
+      state.currentUser=sessionUser;
+      state.isAdmin=sessionAdmin;
+      localStorage.setItem("edevlet_v4",JSON.stringify(state));
+      normalizeState();
+      return;
+    }
+    // Ortak veri henüz yoksa bu cihazdaki veriyi ilk kez gönder.
+    await syncToServer(true);
+  }catch(e){
+    // İnternet/API yoksa uygulama yerel olarak çalışmaya devam eder.
+  }
+  normalizeState();
+}
+
+function normalizeState(){
+  state.accounts=state.accounts||{...DEFAULT_ACCOUNTS};
+  state.passwords=state.passwords||{};
+  state.basvurular=state.basvurular||[];
+  state.ilanlar=state.ilanlar||[];
+  state.plakalar=state.plakalar||{};
+  state.favorites=state.favorites||[];
+  state.vergi=state.vergi||{};
+  state.sgkPrim=state.sgkPrim||{};
+  state.adminPass=state.adminPass||DEFAULT_ADMIN_PASS;
+  state.mulkler=state.mulkler||{};
+  state.vezne=state.vezne||[];
+  state.texts=Object.assign({}, DEFAULT_TEXTS, state.texts||{});
+  state.duyuru=state.duyuru||"Sistem eğitim demosu olarak çalışır.";
+}
+
+const SHARED_API_URL="/api/state";
+let syncTimer=null;
+let syncBusy=false;
+
+function syncSnapshot(){
+  const copy=JSON.parse(JSON.stringify(state));
+  // Oturum bilgileri cihaza özel kalır.
+  copy.currentUser=null;
+  copy.isAdmin=false;
+  return copy;
+}
+
+async function getSharedState(){
+  const r=await fetch(SHARED_API_URL+"?t="+Date.now(), {cache:"no-store"});
+  if(!r.ok) throw new Error("Sunucudan veri alınamadı");
+  return await r.json();
+}
+
+async function syncToServer(immediate=false){
+  clearTimeout(syncTimer);
+  const send=async()=>{
+    if(syncBusy)return;
+    syncBusy=true;
+    try{
+      await fetch(SHARED_API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(syncSnapshot())
+      });
+    }catch(e){} finally{syncBusy=false;}
+  };
+  if(immediate) return send();
+  syncTimer=setTimeout(send,250);
+}
+
+function save(){
+  localStorage.setItem("edevlet_v4",JSON.stringify(state));
+  syncToServer(false);
+}
+
+async function syncFromServer(){
+  try{
+    const server=await getSharedState();
+    if(!server || typeof server!=="object")return;
+    const sessionUser=state.currentUser;
+    const sessionAdmin=state.isAdmin;
+    Object.assign(state,server);
+    state.currentUser=sessionUser;
+    state.isAdmin=sessionAdmin;
+    normalizeState();
+    localStorage.setItem("edevlet_v4",JSON.stringify(state));
+    if(state.currentUser && !state.isAdmin) refreshMenu();
+    if(state.isAdmin) refreshAdminListe();
+  }catch(e){}
+}
+
+function pad(n){return String(n).padStart(2,"0");}
+function nowStr(){const d=new Date();return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;}
+function log(msg){state.counter=(state.counter||0)+1;state.history.unshift(`${nowStr()} | #${state.counter} | ${msg}`);if(state.history.length>300)state.history.pop();save();}
+function toast(m,ms=2300){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove("show"),ms);}
+
+function clearForms(){
+  // Tüm input/textarea/select alanlarını temizle (login/admin-login hariç tutulabilir ama basit tutuyoruz: sadece aktif olmayan ekranlar)
+  document.querySelectorAll(".screen input, .screen textarea, .screen select").forEach(el=>{
+    // login alanlarını koru eğer login ekranındaysak - genel: her geçişte ilgili ekranın formunu temizle
+    if(el.id==="login-user"||el.id==="login-pass"||el.id==="admin-pass") return;
+    if(el.type==="checkbox"||el.type==="radio") return;
+    if(el.tagName==="SELECT"){ el.selectedIndex=0; return; }
+    el.value="";
+  });
+}
+
+function showScreen(id){
+  try{ if(typeof applyTexts==='function') applyTexts(); }catch(e){}
+  clearForms();
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const el=document.getElementById("screen-"+id);
+  if(!el){toast("Ekran yok: "+id);return;}
+  el.classList.add("active");
+  if(id==="menu")refreshMenu();
+  if(id==="admin")refreshAdminListe();
+  if(id==="nufus")refreshKimlik();
+  if(id==="arac")refreshPlaka();
+  if(id==="emlak")refreshIlanlar();
+  if(id==="basvuru")refreshBasvurular();
+  if(id==="sgk")sgkSorgula();
+  if(id==="vergi")vergiYenile();
+  if(id==="adli")refreshAdli();
+  if(id==="egitim")refreshEgitim();
+  if(id==="profil")refreshProfil();
+  if(id==="vezne")refreshVezne();
+
+  // Ekrana özel varsayılanlar (form temizlendikten sonra)
+  if(id==="para" && state.currentUser && !state.isAdmin){
+    const el=document.getElementById("para-ad"); if(el) el.value=state.currentUser;
+  }
+  if(id==="havale" && state.currentUser && !state.isAdmin){
+    const el=document.getElementById("havale-from"); if(el) el.value=state.currentUser;
+  }
+}
+
+function renderServices(filter=""){
+  const q=filter.trim().toLowerCase();
+  const grid=document.getElementById("svc-grid");
+  if(!grid) return;
+  const favs=state.favorites||[];
+  let list=[...SERVICES];
+  if(q) list=list.filter(s=>s.title.toLowerCase().includes(q)||s.keys.includes(q)||(s.cat||"").toLowerCase().includes(q));
+  // group by category
+  const cats=[];
+  const map={};
+  list.forEach(s=>{
+    const c=s.cat||"Diğer";
+    if(!map[c]){map[c]=[];cats.push(c);}
+    map[c].push(s);
+  });
+  // within cat, favorites first
+  let html="";
+  cats.forEach(c=>{
+    const items=map[c].sort((a,b)=>(favs.includes(b.id)?1:0)-(favs.includes(a.id)?1:0));
+    html+=`<div class="cat"><div class="cat-h">${c}</div><div class="svc-grid">`;
+    html+=items.map(s=>{
+      const isFav=favs.includes(s.id);
+      const click=s.fn==="openListe"?"openListe()":s.fn==="openGecmis"?"openGecmis(false)":`showScreen('${s.id}')`;
+      return `<div class="svc ${isFav?'fav-on':''}" onclick="${click}">
+        <span class="fav" onclick="event.stopPropagation();toggleFav('${s.id}')">${isFav?'★':'☆'}</span>
+        <div class="ic">${s.icon}</div><div class="t">${s.title}</div></div>`;
+    }).join("");
+    html+=`</div></div>`;
+  });
+  grid.innerHTML=html||`<p class="muted center">Sonuç yok</p>`;
+}
+function filterServices(){renderServices(document.getElementById("svc-search").value);}
+function toggleFav(id){
+  const i=state.favorites.indexOf(id);
+  if(i>=0) state.favorites.splice(i,1); else state.favorites.push(id);
+  save(); renderServices(document.getElementById("svc-search").value); toast(i>=0?"Favoriden çıkarıldı":"Favoriye eklendi");
+}
+
+function doLogin(){
+  const u=(document.getElementById("login-user").value||"").trim().toLowerCase();
+  const p=document.getElementById("login-pass").value||"";
+  if(!u) return toast("Kullanıcı adı girin");
+  if(!(u in state.accounts)){
+    state.accounts[u]=0; state.passwords[u]=p;
+    ensureUserData(u);
+    log(`YENİ HESAP | ${u} | 0 TL`); save(); toast("Yeni hesap oluşturuldu");
+  } else {
+    const saved=state.passwords[u]||"";
+    if(saved && saved!==p) return toast("✗ Yanlış şifre!");
+  }
+  state.currentUser=u; state.isAdmin=false; save(); showScreen("menu");
+}
+function doAdminLogin(){
+  const p=document.getElementById("admin-pass").value;
+  if(p!==(state.adminPass||DEFAULT_ADMIN_PASS)) return toast("✗ Yanlış admin şifresi!");
+  state.isAdmin=true; state.currentUser="admin"; save(); showScreen("admin"); toast("Admin paneli");
+}
+function doLogout(){
+  state.currentUser=null; state.isAdmin=false; save();
+  ["login-user","login-pass","admin-pass"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+  showScreen("login");
+}
+function ensureUserData(u){
+  if(!state.vergi[u]) state.vergi[u]=[
+    {id:"V1",ad:"MTV 2026",tutar:850},
+    {id:"V2",ad:"Çevre Temizlik",tutar:120}
+  ];
+  if(state.sgkPrim[u]==null) state.sgkPrim[u]=Math.floor(Math.random()*500);
+}
+function refreshMenu(){
+  const u=state.currentUser;
+  document.getElementById("menu-welcome").textContent=u||"—";
+  document.getElementById("menu-balance").textContent=((state.accounts[u]??0).toLocaleString("tr-TR"))+" TL";
+  document.getElementById("para-ad").value=u||"";
+  document.getElementById("havale-from").value=u||"";
+  document.getElementById("duyuru-text").textContent=state.duyuru||"";
+  if(u) ensureUserData(u);
+  const bas=(state.basvurular||[]).filter(b=>b.user===u).length;
+  const bek=(state.basvurular||[]).filter(b=>b.user===u&&b.durum==="beklemede").length;
+  document.getElementById("menu-stats").innerHTML=`
+    <div class="stat"><div class="n">${(state.accounts[u]??0).toLocaleString("tr-TR")}</div><div class="l">Bakiye ₺</div></div>
+    <div class="stat"><div class="n">${bas}</div><div class="l">Başvuru</div></div>
+    <div class="stat"><div class="n">${bek}</div><div class="l">Bekleyen</div></div>`;
+  renderServices(document.getElementById("svc-search")?.value||"");
+}
+
+function getAmt(id){const v=parseFloat(document.getElementById(id).value);if(isNaN(v)||v<=0)return null;return Math.round(v*100)/100;}
+function doYatir(){
+  const ad=(document.getElementById("para-ad").value||"").trim().toLowerCase();
+  const miktar=getAmt("para-miktar");
+  if(!ad)return toast("Hesap girin"); if(miktar===null)return toast("Tutar > 0");
+  if(!(ad in state.accounts)){state.accounts[ad]=0;state.passwords[ad]=state.passwords[ad]||"";log(`YENİ HESAP+YATIR | ${ad} | +${miktar} TL`);}
+  else log(`YATIRMA | ${ad} | +${miktar} TL`);
+  state.accounts[ad]+=miktar;save();toast(`✓ Yatırıldı. Bakiye: ${state.accounts[ad]} TL`);document.getElementById("para-miktar").value="";
+}
+function doCek(){
+  const ad=(document.getElementById("para-ad").value||"").trim().toLowerCase();
+  const miktar=getAmt("para-miktar");
+  if(!ad)return toast("Hesap girin"); if(miktar===null)return toast("Tutar > 0");
+  if(!(ad in state.accounts))return toast("Hesap yok");
+  if(state.accounts[ad]<miktar)return toast("✗ Yetersiz bakiye");
+  // Nakit çekim vezneye düşer — onay + fiş gerekir
+  const id="Z"+Date.now().toString(36).toUpperCase();
+  state.vezne=state.vezne||[];
+  state.texts=Object.assign({}, DEFAULT_TEXTS, state.texts||{});
+  state.vezne.unshift({
+    id, tip:"cekme", user:ad, miktar,
+    durum:"beklemede", tarih:nowStr(),
+    talepEden: state.currentUser||ad
+  });
+  log(`VEZNE TALEBİ | ÇEKME | ${ad} | ${miktar} TL | ${id} | beklemede`);
+  save();
+  toast("Talebiniz vezneye iletildi. Onay sonrası nakit/fiş verilir.");
+  document.getElementById("para-miktar").value="";
+}
+function doBakiye(){
+  const ad=(document.getElementById("para-ad").value||"").trim().toLowerCase();
+  if(!ad||!(ad in state.accounts))return toast("Hesap yok");
+  toast(`Bakiye: ${state.accounts[ad].toLocaleString("tr-TR")} TL`,3000);
+}
+function doHavale(){
+  const from=(document.getElementById("havale-from").value||"").trim().toLowerCase();
+  const to=(document.getElementById("havale-to").value||"").trim().toLowerCase();
+  const miktar=getAmt("havale-miktar");
+  const acik=(document.getElementById("havale-aciklama").value||"").trim();
+  if(!from||!to)return toast("Gönderen/alıcı girin");
+  if(from===to)return toast("Aynı hesap olamaz");
+  if(miktar===null)return toast("Geçerli tutar");
+  if(!(from in state.accounts)||!(to in state.accounts))return toast("Hesap bulunamadı");
+  if(state.accounts[from]<miktar)return toast("✗ Yetersiz bakiye");
+  state.accounts[from]-=miktar;state.accounts[to]+=miktar;
+  log(`HAVALE | ${from} → ${to} | ${miktar} TL${acik?" | "+acik:""}`);save();
+  toast("✓ Havale tamam");document.getElementById("havale-miktar").value="";
+}
+function doSifreDegistir(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Normal kullanıcı ile girin");
+  const eski=document.getElementById("sifre-eski").value||"";
+  const yeni=document.getElementById("sifre-yeni").value||"";
+  const yeni2=document.getElementById("sifre-yeni2").value||"";
+  const saved=state.passwords[u]||"";
+  if(saved&&saved!==eski)return toast("✗ Mevcut şifre yanlış");
+  if(yeni!==yeni2)return toast("✗ Eşleşmiyor");
+  if(yeni.length>0&&yeni.length<3)return toast("En az 3 karakter");
+  state.passwords[u]=yeni;log(`ŞİFRE DEĞİŞTİ | ${u}`);save();toast("✓ Kaydedildi");showScreen("menu");
+}
+
+/* Kimlik */
+function basvuruKimlik(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const ad=document.getElementById("kimlik-ad").value.trim();
+  const dogum=document.getElementById("kimlik-dogum").value;
+  const il=document.getElementById("kimlik-il").value.trim();
+  const tip=document.getElementById("kimlik-tip").value;
+  if(!ad||!dogum||!il)return toast("Tüm alanları doldurun");
+  const id="K"+Date.now().toString(36).toUpperCase();
+  const tipAd={yeni:"Yeni kimlik",kayip:"Kayıp yenileme",degisim:"Bilgi değişiklik"}[tip]||tip;
+  state.basvurular.unshift({id,user:u,tip:"kimlik",tipAd,detay:`${ad} | ${dogum} | ${il}`,durum:"beklemede",tarih:nowStr()});
+  log(`KİMLİK BAŞVURU | ${u} | ${tipAd} | ${id}`);save();toast("✓ Başvuru: "+id);refreshKimlik();
+}
+function refreshKimlik(){
+  const u=state.currentUser;
+  const mine=(state.basvurular||[]).filter(b=>b.tip==="kimlik"&&b.user===u);
+  document.getElementById("kimlik-durum").innerHTML=mine.length?mine.map(b=>{
+    const st=b.durum==="onaylandi"?"status-ok":b.durum==="reddedildi"?"status-no":"status-wait";
+    return `<div class="list-item"><div><div class="name">${b.tipAd}</div><div class="muted">${b.id} · ${b.tarih}<br>${b.detay}</div></div><span class="${st}">${b.durum}</span></div>`;
+  }).join(""):"<span class='muted'>Başvuru yok</span>";
+}
+
+/* Plaka */
+function basvuruPlaka(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const eski=(document.getElementById("plaka-eski").value||"").trim().toUpperCase();
+  const yeni=(document.getElementById("plaka-yeni").value||"").trim().toUpperCase();
+  const ruhsat=document.getElementById("plaka-ruhsat").value.trim();
+  const tip=document.getElementById("plaka-tip").value;
+  if(!yeni||!ruhsat)return toast("Yeni plaka ve ruhsat gerekli");
+  const id="P"+Date.now().toString(36).toUpperCase();
+  const tipAd={degisim:"Plaka değişikliği",ilkyazim:"İlk tescil",devri:"Devri sonrası"}[tip]||tip;
+  state.basvurular.unshift({id,user:u,tip:"plaka",tipAd,detay:`${eski||"—"} → ${yeni} | ${ruhsat}`,durum:"beklemede",tarih:nowStr(),plakaYeni:yeni,plakaEski:eski});
+  log(`PLAKA BAŞVURU | ${u} | ${eski||"YOK"} → ${yeni} | ${id}`);save();toast("✓ "+id);refreshPlaka();
+}
+function refreshPlaka(){
+  const u=state.currentUser;
+  const list=state.plakalar[u]||[];
+  const bas=(state.basvurular||[]).filter(b=>b.tip==="plaka"&&b.user===u);
+  let html="";
+  if(list.length) html+=list.map(p=>`<div class="list-item"><span class="name">${p}</span><span class="status-ok">aktif</span></div>`).join("");
+  if(bas.length) html+=bas.map(b=>{
+    const st=b.durum==="onaylandi"?"status-ok":b.durum==="reddedildi"?"status-no":"status-wait";
+    return `<div class="list-item"><div><div class="name">${b.tipAd}</div><div class="muted">${b.detay}<br>${b.id} · ${b.tarih}</div></div><span class="${st}">${b.durum}</span></div>`;
+  }).join("");
+  document.getElementById("plaka-listesi").innerHTML=html||"<span class='muted'>Kayıt yok</span>";
+}
+
+/* Emlak */
+function ilanEkle(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const tip=document.getElementById("emlak-tip").value;
+  const konum=document.getElementById("emlak-konum").value.trim();
+  const aciklama=document.getElementById("emlak-aciklama").value.trim();
+  const fiyat=parseFloat(document.getElementById("emlak-fiyat").value);
+  const m2=parseFloat(document.getElementById("emlak-m2").value)||0;
+  if(!konum||!aciklama||isNaN(fiyat)||fiyat<=0)return toast("Zorunlu alanlar eksik");
+  const id="E"+Date.now().toString(36).toUpperCase();
+  state.ilanlar.unshift({id,user:u,tip,konum,aciklama,fiyat,m2,tarih:nowStr()});
+  log(`EMLAK İLAN | ${u} | ${tip} | ${konum} | ${fiyat} TL`);save();toast("✓ İlan yayınlandı");refreshIlanlar();
+}
+function refreshIlanlar(){
+  const list=state.ilanlar||[];
+  const u=state.currentUser;
+  document.getElementById("emlak-listesi").innerHTML=list.length?list.map((i,idx)=>{
+    const own=i.user===u;
+    const ownTag=own?" <span class='pill'>sizin</span>":"";
+    const tipAd=i.tip==="kiralik"?"Kiralık":"Satılık";
+    const btnLabel=i.tip==="kiralik"?"Kirala":"Satın Al";
+    const btn=(!own && u && !state.isAdmin)
+      ? `<button class="btn btn-success btn-sm" style="margin-top:6px;margin-bottom:0" onclick="emlakIslem(${idx})">${i.tip==='kiralik'?t('emlakKirala','Kirala'):t('emlakSatinAl','Satın Al')}</button>`
+      : (own?`<button class="btn btn-danger btn-sm" style="margin-top:6px;margin-bottom:0" onclick="emlakIlanKaldir(${idx})">${t('emlakKaldir','İlanı Kaldır')}</button>`:"");
+    return `<div class="list-item" style="flex-direction:column;align-items:flex-start">
+      <div style="width:100%;display:flex;justify-content:space-between"><span class="name">${tipAd}${ownTag}</span><span class="amt">${i.fiyat.toLocaleString("tr-TR")} TL</span></div>
+      <div class="muted">${i.konum} · ${i.m2||"?"} m²<br>${i.aciklama}<br>${i.user} · ${i.tarih} · ${i.id||""}</div>
+      ${btn}</div>`;
+  }).join(""):"<span class='muted'>İlan yok</span>";
+}
+function emlakIslem(idx){
+  const u=state.currentUser;
+  if(!u||state.isAdmin) return toast("Önce kullanıcı girişi yapın");
+  const list=state.ilanlar||[];
+  const i=list[idx];
+  if(!i) return toast("İlan bulunamadı");
+  if(i.user===u) return toast("Kendi ilanınız");
+  if(!(u in state.accounts)) return toast("Hesabınız yok");
+  if((state.accounts[u]||0) < i.fiyat) return toast("✗ Yetersiz bakiye ("+i.fiyat+" TL)");
+  if(!confirm((i.tip==="kiralik"?"Kiralamak":"Satın almak")+" istediğinize emin misiniz?\n"+i.fiyat+" TL hesabınızdan düşülecek.")) return;
+  // para transfer
+  state.accounts[u]-=i.fiyat;
+  if(!(i.user in state.accounts)) state.accounts[i.user]=0;
+  state.accounts[i.user]+=i.fiyat;
+  const islem=i.tip==="kiralik"?"KİRALAMA":"SATIN ALMA";
+  log(`${islem} | ${u} ← ${i.user} | ${i.konum} | ${i.fiyat} TL | ${i.id||""}`);
+  // ilanı kaldır (kiralandı/satıldı)
+  list.splice(idx,1);
+  state.ilanlar=list;
+  // kullanıcıya mülk kaydı (opsiyonel basit)
+  if(!state.mulkler) state.mulkler={};
+  if(!state.mulkler[u]) state.mulkler[u]=[];
+  state.mulkler[u].push({tip:i.tip,konum:i.konum,aciklama:i.aciklama,fiyat:i.fiyat,tarih:nowStr(),oncekiSahip:i.user});
+  save();
+  toast(i.tip==="kiralik"?"✓ Kiralandı":"✓ Satın alındı");
+  refreshIlanlar();
+}
+function emlakIlanKaldir(idx){
+  const list=state.ilanlar||[];
+  const i=list[idx];
+  if(!i||i.user!==state.currentUser) return toast("Yetki yok");
+  if(!confirm("İlan kaldırılsın mı?")) return;
+  list.splice(idx,1);
+  state.ilanlar=list;
+  log(`İLAN KALDIRDI | ${state.currentUser} | ${i.id||i.konum}`);
+  save(); toast("✓ İlan kaldırıldı"); refreshIlanlar();
+}
+
+/* SGK */
+function sgkSorgula(){
+  const u=state.currentUser;if(!u)return;
+  ensureUserData(u);
+  const borc=state.sgkPrim[u]||0;
+  const gun=120+Math.floor((u.length*17)%200);
+  document.getElementById("sgk-ozet").innerHTML=`
+    <div class="list-item"><span class="name">Toplam prim günü</span><span class="amt">${gun}</span></div>
+    <div class="list-item"><span class="name">Tahmini prim borcu</span><span class="amt">${borc.toLocaleString("tr-TR")} TL</span></div>
+    <p class="muted" style="margin-top:6px">Demo veridir.</p>`;
+  document.getElementById("sgk-tutar").value=borc||"";
+}
+function sgkOde(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const miktar=getAmt("sgk-tutar");if(miktar===null)return toast("Tutar girin");
+  if((state.accounts[u]||0)<miktar)return toast("✗ Yetersiz bakiye");
+  state.accounts[u]-=miktar;
+  state.sgkPrim[u]=Math.max(0,(state.sgkPrim[u]||0)-miktar);
+  log(`SGK ÖDEME | ${u} | -${miktar} TL`);save();toast("✓ Prim ödemesi yapıldı");sgkSorgula();
+}
+
+/* Vergi */
+function vergiYenile(){
+  const u=state.currentUser;if(!u)return;
+  ensureUserData(u);
+  const list=state.vergi[u]||[];
+  document.getElementById("vergi-liste").innerHTML=list.length?list.map(v=>
+    `<div class="list-item"><span class="name">${v.ad}</span><span class="amt">${v.tutar.toLocaleString("tr-TR")} TL</span></div>`
+  ).join(""):"<span class='muted'>Borç görünmüyor</span>";
+  const sel=document.getElementById("vergi-sec");
+  sel.innerHTML=list.map((v,i)=>`<option value="${i}">${v.ad} — ${v.tutar} TL</option>`).join("")||"<option>Borç yok</option>";
+}
+function vergiOde(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  ensureUserData(u);
+  const list=state.vergi[u]||[];
+  const idx=parseInt(document.getElementById("vergi-sec").value,10);
+  if(isNaN(idx)||!list[idx])return toast("Borç seçin");
+  const v=list[idx];
+  if((state.accounts[u]||0)<v.tutar)return toast("✗ Yetersiz bakiye");
+  state.accounts[u]-=v.tutar;
+  log(`VERGİ ÖDEME | ${u} | ${v.ad} | -${v.tutar} TL`);
+  list.splice(idx,1);state.vergi[u]=list;save();toast("✓ Vergi ödendi");vergiYenile();
+}
+
+/* Adli */
+function basvuruAdli(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const amac=document.getElementById("adli-amac").value;
+  const id="A"+Date.now().toString(36).toUpperCase();
+  state.basvurular.unshift({id,user:u,tip:"adli",tipAd:"Adli sicil belgesi",detay:"Amaç: "+amac,durum:"beklemede",tarih:nowStr()});
+  log(`ADLİ SİCİL | ${u} | ${amac} | ${id}`);save();toast("✓ Talep alındı");refreshAdli();
+}
+function refreshAdli(){
+  const u=state.currentUser;
+  const mine=(state.basvurular||[]).filter(b=>b.tip==="adli"&&b.user===u);
+  document.getElementById("adli-liste").innerHTML=mine.length?mine.map(b=>{
+    const st=b.durum==="onaylandi"?"status-ok":b.durum==="reddedildi"?"status-no":"status-wait";
+    return `<div class="list-item"><div><div class="name">${b.tipAd}</div><div class="muted">${b.detay}<br>${b.id} · ${b.tarih}</div></div><span class="${st}">${b.durum}</span></div>`;
+  }).join(""):"<span class='muted'>Talep yok</span>";
+}
+
+/* Eğitim */
+function basvuruEgitim(){
+  const u=state.currentUser;if(!u||state.isAdmin)return toast("Giriş yapın");
+  const okul=document.getElementById("egitim-okul").value.trim();
+  const bolum=document.getElementById("egitim-bolum").value.trim();
+  const sinif=document.getElementById("egitim-sinif").value;
+  if(!okul||!bolum)return toast("Okul ve bölüm girin");
+  const id="G"+Date.now().toString(36).toUpperCase();
+  state.basvurular.unshift({id,user:u,tip:"egitim",tipAd:"Öğrenci belgesi",detay:`${okul} | ${bolum} | ${sinif}. sınıf`,durum:"beklemede",tarih:nowStr()});
+  log(`ÖĞRENCİ BELGESİ | ${u} | ${okul} | ${id}`);save();toast("✓ Talep alındı");refreshEgitim();
+}
+function refreshEgitim(){
+  const u=state.currentUser;
+  const mine=(state.basvurular||[]).filter(b=>b.tip==="egitim"&&b.user===u);
+  document.getElementById("egitim-liste").innerHTML=mine.length?mine.map(b=>{
+    const st=b.durum==="onaylandi"?"status-ok":b.durum==="reddedildi"?"status-no":"status-wait";
+    return `<div class="list-item"><div><div class="name">${b.tipAd}</div><div class="muted">${b.detay}<br>${b.id} · ${b.tarih}</div></div><span class="${st}">${b.durum}</span></div>`;
+  }).join(""):"<span class='muted'>Talep yok</span>";
+}
+
+function refreshBasvurular(){
+  const u=state.currentUser;
+  let list=state.basvurular||[];
+  if(!state.isAdmin) list=list.filter(b=>b.user===u);
+  document.getElementById("basvuru-listesi").innerHTML=list.length?list.map(b=>{
+    const st=b.durum==="onaylandi"?"status-ok":b.durum==="reddedildi"?"status-no":"status-wait";
+    return `<div class="list-item" style="flex-direction:column;align-items:flex-start">
+      <div style="width:100%;display:flex;justify-content:space-between"><span class="name">${b.tipAd||b.tip}</span><span class="${st}">${b.durum}</span></div>
+      <div class="muted">${b.detay}<br>${b.user} · ${b.id} · ${b.tarih}</div></div>`;
+  }).join(""):"<p class='muted'>Başvuru yok</p>";
+}
+
+function openListe(){
+  const names=Object.keys(state.accounts).sort();
+  document.getElementById("liste-container").innerHTML=names.map(n=>`<div class="list-item"><span class="name">${n}</span><span class="amt">${state.accounts[n].toLocaleString("tr-TR")} TL</span></div>`).join("")||"<p class='muted'>Yok</p>";
+  showScreen("liste");
+}
+let gecmisFromAdmin=false;
+function openGecmis(fromAdmin){
+  gecmisFromAdmin=!!fromAdmin;
+  let list=state.history||[];
+  if(!state.isAdmin&&state.currentUser){
+    const u=state.currentUser.toLowerCase();
+    list=list.filter(h=>{
+      const low=h.toLowerCase();
+      return low.includes(" | "+u+" ")||low.includes(" | "+u+" |")||low.endsWith(" | "+u)||
+        low.includes("→ "+u)||low.includes(u+" →")||low.includes(u+" |");
+    });
+  }
+  const alt=document.getElementById("gecmis-alt");
+  if(alt) alt.textContent=state.isAdmin?"Tüm hareketler":("Sizin işlemleriniz: "+(state.currentUser||""));
+  document.getElementById("gecmis-container").innerHTML=list.length?list.map(h=>`<div class="tx"><div class="time">${h.split(" | ").slice(0,2).join(" | ")}</div>${h.split(" | ").slice(2).join(" | ")}</div>`).join(""):`<p class="muted">${state.isAdmin?"İşlem yok":"Size ait işlem yok"}</p>`;
+  showScreen("gecmis");
+}
+function goBackFromGecmis(){showScreen(gecmisFromAdmin?"admin":"menu");}
+function clearGecmis(){
+  if(state.isAdmin){if(!confirm("Tümü silinsin mi?"))return;state.history=[];save();openGecmis(true);toast("Silindi");}
+  else{
+    const u=(state.currentUser||"").toLowerCase();
+    if(!confirm("Kendi geçmişiniz silinsin mi?"))return;
+    state.history=state.history.filter(h=>!h.toLowerCase().includes(u));
+    save();openGecmis(false);toast("Kendi geçmişiniz silindi");
+  }
+}
+function dekontIndir(){
+  let list=state.history||[];
+  if(!state.isAdmin&&state.currentUser){
+    const u=state.currentUser.toLowerCase();
+    list=list.filter(h=>h.toLowerCase().includes(u));
+  }
+  if(!list.length)return toast("İşlem yok");
+  const text=`===== e-Devlet Demo Dekont =====\n${list[0]}\nKullanıcı: ${state.currentUser}\nZaman: ${nowStr()}\n================================`;
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>toast("Dekont panoya kopyalandı")).catch(()=>alert(text));}
+  else alert(text);
+}
+
+function refreshProfil(){
+  const u=state.currentUser;
+  if(!u){document.getElementById("profil-box").innerHTML="—";return;}
+  ensureUserData(u);
+  const bas=(state.basvurular||[]).filter(b=>b.user===u);
+  const pl=(state.plakalar[u]||[]).join(", ")||"—";
+  const mulk=(state.mulkler&&state.mulkler[u])?state.mulkler[u]:[];
+  const mulkHtml=mulk.length?mulk.map(m=>`<div class="muted" style="text-align:left;margin-top:4px">• ${m.tip==="kiralik"?"Kiralandı":"Satın alındı"}: ${m.konum} (${m.fiyat} TL) — ${m.tarih}</div>`).join(""):"<span class='muted'>Yok</span>";
+  document.getElementById("profil-box").innerHTML=`
+    <div class="card-title">Vatandaş Özeti</div>
+    <div class="list-item"><span class="name">Kullanıcı</span><span>${u}</span></div>
+    <div class="list-item"><span class="name">Bakiye</span><span class="amt">${(state.accounts[u]||0).toLocaleString("tr-TR")} TL</span></div>
+    <div class="list-item"><span class="name">Şifre</span><span>${state.passwords[u]?"Kayıtlı 🔒":"Yok"}</span></div>
+    <div class="list-item"><span class="name">Plakalar</span><span>${pl}</span></div>
+    <div class="list-item"><span class="name">Başvuru sayısı</span><span>${bas.length}</span></div>
+    <div class="list-item"><span class="name">SGK prim borcu</span><span>${(state.sgkPrim[u]||0)} TL</span></div>
+    <div class="list-item"><span class="name">Vergi kalemi</span><span>${(state.vergi[u]||[]).length}</span></div>
+    <div style="margin-top:10px"><div class="name">Mülklerim / Kiraladıklarım</div>${mulkHtml}</div>`;
+}
+
+/* Admin */
+
+function refreshVezne(){
+  const list=(state.vezne||[]).filter(v=>v.durum==="beklemede");
+  const el=document.getElementById("vezne-liste");
+  if(!el) return;
+  if(!list.length){ el.innerHTML="<span class='muted'>Bekleyen talep yok</span>"; return; }
+  el.innerHTML=list.map((v,i)=>{
+    const tip=v.tip==="cekme"?"NAKİT ÇEKME":v.tip;
+    return `<div class="list-item" style="flex-direction:column;align-items:flex-start">
+      <div style="width:100%;display:flex;justify-content:space-between">
+        <span class="name">${tip}</span><span class="amt">${v.miktar.toLocaleString("tr-TR")} TL</span>
+      </div>
+      <div class="muted">Hesap: <b>${v.user}</b> · Talep: ${v.talepEden||v.user}<br>${v.id} · ${v.tarih}</div>
+      <div class="row" style="width:100%;margin-top:6px">
+        <button class="btn btn-success btn-sm" onclick="vezneOnay('${v.id}')">${t('vezneOnay','Onayla + Fiş')}</button>
+        <button class="btn btn-danger btn-sm" onclick="vezneRed('${v.id}')">${t('vezneRed','Reddet')}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function vezneOnay(id){
+  const v=(state.vezne||[]).find(x=>x.id===id);
+  if(!v||v.durum!=="beklemede") return toast("Talep yok");
+  if(v.tip==="cekme"){
+    if(!(v.user in state.accounts)) return toast("Hesap yok");
+    if((state.accounts[v.user]||0)<v.miktar) return toast("✗ Hesapta yetersiz bakiye");
+    state.accounts[v.user]-=v.miktar;
+  }
+  v.durum="onaylandi";
+  v.onayTarih=nowStr();
+  const bakiye=state.accounts[v.user]??0;
+  const fis =
+`================================
+   ${t('fisBaslik','e-Devlet Demo · VEZNE FİŞİ')}
+================================
+Fiş No     : ${v.id}
+Tarih      : ${v.onayTarih}
+İşlem      : NAKİT ÇEKME
+Hesap      : ${v.user}
+Tutar      : ${v.miktar.toLocaleString("tr-TR")} TL
+Kalan bakiye: ${bakiye.toLocaleString("tr-TR")} TL
+Talep eden : ${v.talepEden||v.user}
+Onaylayan  : VEZNE / YETKİLİ
+--------------------------------
+${t('fisAlt','Bu fiş eğitim demosudur. Kağıda yazıp vatandaşa verilebilir.')}
+================================`;
+  state.sonFis=fis;
+  log(`VEZNE ONAY | ÇEKME | ${v.user} | -${v.miktar} TL | ${v.id}`);
+  save();
+  const box=document.getElementById("vezne-fis");
+  if(box) box.textContent=fis;
+  refreshVezne();
+  toast("✓ Onaylandı — fiş hazır, kopyalayıp kağıda yazabilirsiniz");
+}
+function vezneRed(id){
+  const v=(state.vezne||[]).find(x=>x.id===id);
+  if(!v||v.durum!=="beklemede") return toast("Talep yok");
+  v.durum="reddedildi";
+  v.onayTarih=nowStr();
+  log(`VEZNE RED | ${v.tip} | ${v.user} | ${v.miktar} TL | ${v.id}`);
+  save();
+  refreshVezne();
+  toast("Talep reddedildi");
+}
+function fisKopyala(){
+  const t=state.sonFis||document.getElementById("vezne-fis")?.textContent||"";
+  if(!t||t.includes("Henüz fiş")) return toast("Fiş yok");
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast("Fiş panoya kopyalandı")).catch(()=>alert(t));
+  else alert(t);
+}
+
+
+function t(key, fallback){
+  const texts = Object.assign({}, DEFAULT_TEXTS, state.texts||{});
+  if(texts[key] != null && String(texts[key]).length) return String(texts[key]);
+  if(fallback != null) return fallback;
+  return DEFAULT_TEXTS[key] != null ? DEFAULT_TEXTS[key] : key;
+}
+function applyTexts(){
+  // data-text attributes
+  document.querySelectorAll("[data-text]").forEach(el=>{
+    const k = el.getAttribute("data-text");
+    if(!k) return;
+    const val = t(k);
+    if(el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+      if(el.getAttribute("data-text-attr") === "placeholder") el.placeholder = val;
+      else el.value = val;
+    } else {
+      el.textContent = val;
+    }
+  });
+  // placeholder-only
+  document.querySelectorAll("[data-placeholder]").forEach(el=>{
+    el.placeholder = t(el.getAttribute("data-placeholder"));
+  });
+  // duyuru body
+  const dt = document.getElementById("duyuru-text");
+  if(dt) dt.textContent = state.duyuru || "";
+  try { document.title = t("siteTitle") + " — Eğitim Demosu"; } catch(e){}
+  // SERVICES titles from texts
+  if(typeof SERVICES !== "undefined"){
+    SERVICES.forEach(s=>{
+      const k = "svc_"+s.id;
+      if(DEFAULT_TEXTS[k] != null || (state.texts && state.texts[k] != null)) s.title = t(k, s.title);
+      // category
+      const catMap = {
+        "Nüfus ve Vatandaşlık":"cat_nufus","Adalet":"cat_adalet","Eğitim":"cat_egitim",
+        "Sosyal Güvenlik":"cat_sgk","Gelir ve Vergi":"cat_vergi","Ulaştırma":"cat_ulastirma",
+        "Tapu ve Emlak":"cat_emlak","Bankacılık (Demo)":"cat_banka","İşlemlerim":"cat_islem","Hesabım":"cat_hesap"
+      };
+      // store original cat once
+      if(!s._cat0) s._cat0 = s.cat;
+      const ck = catMap[s._cat0];
+      if(ck) s.cat = t(ck, s._cat0);
+    });
+  }
+}
+function openMetinler(){
+  const box = document.getElementById("metin-form");
+  if(!box) return;
+  const texts = Object.assign({}, DEFAULT_TEXTS, state.texts||{});
+  box.innerHTML = "";
+  // gruplu göster
+  const groups = {
+    "Genel / Site": ["siteTitle","siteSub","warnBar","warnAdmin","warnVezne","footer","footerLogin","footerAdmin","duyuruBaslik","svcSection","searchPlaceholder","vatandasLabel"],
+    "Giriş": ["loginTitle","loginUserLabel","loginPassLabel","loginBtn","loginAdminBtn","loginHint","adminLoginH1","adminLoginSub","adminLoginTitle","adminLoginPassLabel","adminLoginBtn","adminLoginBack"],
+    "Menü": ["menuSub","profilBtn","logoutBtn","geriAna","geri","geriYonetim"],
+    "Banka": ["bankaH1","bankaSub","bankaCard","bankaHesap","bankaTutar","bankaYatir","bankaCek","bankaBakiye","cekmeNotu"],
+    "Havale": ["havaleH1","havaleSub","havaleCard","havaleFrom","havaleTo","havaleTutar","havaleAcik","havaleBtn"],
+    "Kimlik": ["nufusH1","nufusSub","nufusCard","nufusAd","nufusDogum","nufusIl","nufusNeden","nufusBtn","nufusDurum"],
+    "Araç": ["aracH1","aracSub","aracCard","aracEski","aracYeni","aracRuhsat","aracIslem","aracBtn","aracListe"],
+    "Emlak": ["emlakH1","emlakSub","emlakCard","emlakTip","emlakKonum","emlakAcik","emlakFiyat","emlakM2","emlakBtn","emlakListe","emlakKirala","emlakSatinAl","emlakKaldir"],
+    "SGK / Vergi": ["sgkH1","sgkSub","sgkCard","sgkOzet","sgkSorgula","sgkOdemeCard","sgkTutar","sgkOde","vergiH1","vergiSub","vergiCard","vergiGetir","vergiOdemeCard","vergiKalem","vergiOde"],
+    "Adli / Eğitim": ["adliH1","adliSub","adliCard","adliAmac","adliBtn","adliListe","egitimH1","egitimSub","egitimCard","egitimOkul","egitimBolum","egitimSinif","egitimBtn","egitimListe"],
+    "Diğer sayfalar": ["basvuruH1","basvuruSub","listeH1","listeSub","gecmisH1","gecmisSub","gecmisKopyala","gecmisTemizle","sifreH1","sifreSub","sifreCard","sifreEski","sifreYeni","sifreYeni2","sifreKaydet","profilH1","profilSub"],
+    "Admin": ["adminPanelTitle","adminPanelSub","adminHesap","adminBasvuru","adminSistem","adminHesaplar","adminYeniHesap","adminHesapSil","adminBakiye","adminIsim","adminSifre","adminSifreGoster","adminBasvuruOnay","adminIlanSil","adminDuyuru","adminYazilar","adminVezne","adminGecmis","adminAdminSifre","adminSifirla","adminCikis"],
+    "Vezne / Fiş": ["vezneTitle","vezneSub","vezneBekleyen","vezneSonFis","vezneFisYok","vezneKopyala","vezneOnay","vezneRed","fisBaslik","fisAlt"],
+    "Hizmet adları (menü kutuları)": ["svc_para","svc_havale","svc_nufus","svc_arac","svc_emlak","svc_sgk","svc_vergi","svc_adli","svc_egitim","svc_basvuru","svc_liste","svc_gecmis","svc_sifre","svc_profil"],
+    "Kategori başlıkları": ["cat_nufus","cat_adalet","cat_egitim","cat_sgk","cat_vergi","cat_ulastirma","cat_emlak","cat_banka","cat_islem","cat_hesap"]
+  };
+  Object.keys(groups).forEach(g=>{
+    const h = document.createElement("div");
+    h.className = "card-title";
+    h.style.marginTop = "12px";
+    h.textContent = g;
+    box.appendChild(h);
+    groups[g].forEach(k=>{
+      if(!(k in DEFAULT_TEXTS)) return;
+      const lab = document.createElement("label");
+      lab.textContent = k;
+      box.appendChild(lab);
+      const long = String(DEFAULT_TEXTS[k]||"").length > 36 || k.startsWith("warn") || k.includes("footer") || k.includes("Notu") || k.includes("hint");
+      const el = document.createElement(long ? "textarea" : "input");
+      el.id = "metin-"+k;
+      if(long) el.rows = 2;
+      el.value = texts[k] != null ? texts[k] : DEFAULT_TEXTS[k];
+      box.appendChild(el);
+    });
+  });
+  // ham JSON
+  const hj = document.createElement("div");
+  hj.className = "card-title";
+  hj.style.marginTop = "14px";
+  hj.textContent = "Gelişmiş: Tüm metinler (JSON)";
+  box.appendChild(hj);
+  const ta = document.createElement("textarea");
+  ta.id = "metin-json-all";
+  ta.rows = 8;
+  ta.value = JSON.stringify(texts, null, 2);
+  box.appendChild(ta);
+  showScreen("metinler");
+}
+function kaydetMetinler(){
+  state.texts = state.texts || {};
+  Object.keys(DEFAULT_TEXTS).forEach(k=>{
+    const el = document.getElementById("metin-"+k);
+    if(el) state.texts[k] = el.value;
+  });
+  const j = document.getElementById("metin-json-all");
+  if(j && j.value.trim()){
+    try{
+      const parsed = JSON.parse(j.value);
+      if(parsed && typeof parsed === "object") state.texts = Object.assign({}, DEFAULT_TEXTS, state.texts, parsed);
+    }catch(e){ toast("JSON hatalı, form alanları kullanıldı"); }
+  }
+  save();
+  applyTexts();
+  if(typeof renderServices === "function") renderServices(document.getElementById("svc-search")?.value||"");
+  toast("✓ Tüm yazılar kaydedildi");
+  showScreen("admin");
+}
+function sifirlaMetinler(){
+  if(!confirm("Tüm yazılar varsayılana dönsün mü?")) return;
+  state.texts = Object.assign({}, DEFAULT_TEXTS);
+  save();
+  applyTexts();
+  openMetinler();
+  toast("Varsayılana döndü");
+}
+
+function refreshAdminListe(){
+  const names=Object.keys(state.accounts).sort();
+  document.getElementById("admin-liste").innerHTML=names.map(n=>{
+    const pw=state.passwords[n]||"";
+    const info=state.showPasswords?(pw?` · ${pw}`:" · şifresiz"):(pw?" 🔒":"");
+    return `<div class="list-item"><span class="name">${n}${info}</span><span class="amt">${state.accounts[n].toLocaleString("tr-TR")} TL</span></div>`;
+  }).join("")||"<p class='muted'>Yok</p>";
+}
+function adminYeniHesap(){
+  const ad=prompt("Yeni hesap:");if(!ad)return;
+  const name=ad.trim().toLowerCase();if(name in state.accounts)return toast("Var");
+  const bal=parseFloat(prompt("Bakiye:","0"));const b=isNaN(bal)?0:bal;
+  state.accounts[name]=b;state.passwords[name]="";ensureUserData(name);
+  log(`ADMIN YENİ HESAP | ${name} | ${b} TL`);save();refreshAdminListe();toast("✓");
+}
+function adminHesapSil(){
+  const ad=prompt("Silinecek:");if(!ad)return;
+  const name=ad.trim().toLowerCase();if(!(name in state.accounts))return toast("Yok");
+  delete state.accounts[name];delete state.passwords[name];delete state.vergi[name];delete state.sgkPrim[name];delete state.plakalar[name];
+  log(`ADMIN HESAP SİL | ${name}`);save();refreshAdminListe();toast("✓");
+}
+function adminBakiyeAyarla(){
+  const ad=prompt("Hesap:");if(!ad)return;
+  const name=ad.trim().toLowerCase();if(!(name in state.accounts))return toast("Yok");
+  const bal=parseFloat(prompt("Yeni bakiye:",String(state.accounts[name])));if(isNaN(bal))return toast("Geçersiz");
+  state.accounts[name]=bal;log(`ADMIN BAKİYE | ${name} | =${bal} TL`);save();refreshAdminListe();toast("✓");
+}
+function adminHesapYenidenAdlandir(){
+  const eski=prompt("Eski ad:");if(!eski)return;
+  const oldName=eski.trim().toLowerCase();if(!(oldName in state.accounts))return toast("Yok");
+  const yeni=prompt("Yeni ad:",oldName);if(!yeni)return;
+  const newName=yeni.trim().toLowerCase();if(newName in state.accounts)return toast("Kullanımda");
+  state.accounts[newName]=state.accounts[oldName];state.passwords[newName]=state.passwords[oldName]||"";
+  delete state.accounts[oldName];delete state.passwords[oldName];
+  if(state.plakalar[oldName]){state.plakalar[newName]=state.plakalar[oldName];delete state.plakalar[oldName];}
+  if(state.vergi[oldName]){state.vergi[newName]=state.vergi[oldName];delete state.vergi[oldName];}
+  if(state.sgkPrim[oldName]!=null){state.sgkPrim[newName]=state.sgkPrim[oldName];delete state.sgkPrim[oldName];}
+  log(`ADMIN İSİM | ${oldName} → ${newName}`);save();refreshAdminListe();toast("✓");
+}
+function adminKullaniciSifre(){
+  const ad=prompt("Kullanıcı:");if(!ad)return;
+  const name=ad.trim().toLowerCase();if(!(name in state.accounts))return toast("Yok");
+  const nw=prompt("Yeni şifre (boş=kaldır):",state.passwords[name]||"");if(nw===null)return;
+  state.passwords[name]=nw;log(`ADMIN ŞİFRE | ${name}`);save();refreshAdminListe();toast("✓");
+}
+function adminSifreGoster(){state.showPasswords=!state.showPasswords;save();refreshAdminListe();toast(state.showPasswords?"Açık":"Gizli");}
+function adminAdminSifreDegistir(){
+  const eski=prompt("Mevcut admin şifresi:");if(eski!==(state.adminPass||DEFAULT_ADMIN_PASS))return toast("Yanlış");
+  const nw=prompt("Yeni:");if(!nw||nw.length<3)return toast("En az 3 karakter");
+  if(prompt("Tekrar:")!==nw)return toast("Eşleşmiyor");
+  state.adminPass=nw;log("ADMIN ŞİFRESİ DEĞİŞTİ");save();toast("✓");
+}
+function adminBasvuruOnay(){
+  const bekle=(state.basvurular||[]).filter(b=>b.durum==="beklemede");
+  if(!bekle.length)return toast("Bekleyen yok");
+  const ids=bekle.map((b,i)=>`${i+1}) ${b.id} ${b.user} ${b.tipAd||b.tip}`).join("\n");
+  const sec=prompt("No seçin:\n"+ids);const idx=parseInt(sec,10)-1;
+  if(isNaN(idx)||!bekle[idx])return toast("Geçersiz");
+  const b=bekle[idx];const karar=prompt("onay / red","onay");if(!karar)return;
+  if(karar.toLowerCase().startsWith("o")){
+    b.durum="onaylandi";
+    if(b.tip==="plaka"&&b.plakaYeni){
+      if(!state.plakalar[b.user])state.plakalar[b.user]=[];
+      if(b.plakaEski)state.plakalar[b.user]=state.plakalar[b.user].filter(p=>p!==b.plakaEski);
+      if(!state.plakalar[b.user].includes(b.plakaYeni))state.plakalar[b.user].push(b.plakaYeni);
+    }
+    log(`BAŞVURU ONAY | ${b.id} | ${b.user}`);toast("✓ Onay");
+  }else{b.durum="reddedildi";log(`BAŞVURU RED | ${b.id} | ${b.user}`);toast("Red");}
+  save();
+}
+function adminIlanSil(){
+  if(!(state.ilanlar||[]).length)return toast("İlan yok");
+  const txt=state.ilanlar.map((i,n)=>`${n+1}) ${i.id} ${i.user} ${i.tip}`).join("\n");
+  const idx=parseInt(prompt("No:\n"+txt),10)-1;
+  if(isNaN(idx)||!state.ilanlar[idx])return toast("Geçersiz");
+  const i=state.ilanlar.splice(idx,1)[0];log(`İLAN SİL | ${i.id}`);save();toast("✓");
+}
+function adminDuyuru(){
+  const t=prompt("Duyuru metni:",state.duyuru||"");if(t===null)return;
+  state.duyuru=t;save();toast("✓ Duyuru güncellendi");
+}
+function doAdminSifirla(){
+  const g=id=>document.getElementById(id)&&document.getElementById(id).checked;
+  if(!g("rst-hesaplar")&&!g("rst-sifreler")&&!g("rst-gecmis")&&!g("rst-sayac")&&!g("rst-adminpass")&&!g("rst-basvuru")&&!g("rst-ilan")&&!g("rst-plaka")&&!g("rst-vergi")&&!g("rst-mulk")&&!g("rst-vezne"))
+    return toast("Bir şey seçin");
+  if(!confirm("Emin misiniz?"))return;
+  const parts=[];
+  if(g("rst-hesaplar")){state.accounts={...DEFAULT_ACCOUNTS};parts.push("hesaplar");}
+  if(g("rst-sifreler")){state.passwords={};parts.push("şifreler");}
+  if(g("rst-gecmis")){state.history=[];parts.push("geçmiş");}
+  if(g("rst-sayac")){state.counter=0;parts.push("sayaç");}
+  if(g("rst-adminpass")){state.adminPass=DEFAULT_ADMIN_PASS;parts.push("admin");}
+  if(g("rst-basvuru")){state.basvurular=[];parts.push("başvuru");}
+  if(g("rst-ilan")){state.ilanlar=[];parts.push("ilan");}
+  if(g("rst-plaka")){state.plakalar={};parts.push("plaka");}
+  if(g("rst-vergi")){state.vergi={};state.sgkPrim={};parts.push("vergi/sgk");}
+  if(g("rst-mulk")){state.mulkler={};parts.push("mülk");}
+  if(g("rst-vezne")){state.vezne=[];state.sonFis="";parts.push("vezne");}
+  log("SİSTEM SIFIRLANDI | "+parts.join(", "));save();refreshAdminListe();toast("✓ "+parts.join(", "));showScreen("admin");
+}
+
+function bindEnter(id,fn){const el=document.getElementById(id);if(!el)return;el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();fn();}});}
+
+load().then(()=>showScreen("login"));
+setInterval(syncFromServer,1000);
+bindEnter("login-user",doLogin);
+bindEnter("login-pass",doLogin);
+bindEnter("admin-pass",doAdminLogin);
+bindEnter("para-miktar",doYatir);
+bindEnter("havale-miktar",doHavale);
+bindEnter("sifre-yeni2",doSifreDegistir);
+</script>
+</body>
+</html>
